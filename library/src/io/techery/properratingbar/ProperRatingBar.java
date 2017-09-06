@@ -9,6 +9,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -45,8 +46,8 @@ import android.widget.TextView;
 public class ProperRatingBar extends LinearLayout {
 
     private static final int DF_TOTAL_TICKS = 5;
-    private static final int DF_DEFAULT_TICKS = 3;
-    private static final boolean DF_CLICKABLE = false;
+    private static final int DF_DEFAULT_RATING = 3;
+    private static final int DF_MIN_RATING = 0;
     private static final int DF_SYMBOLIC_TICK_RES = R.string.prb_default_symbolic_string;
     private static final int DF_SYMBOLIC_TEXT_SIZE_RES = R.dimen.prb_symbolic_tick_default_text_size;
     private static final int DF_SYMBOLIC_TEXT_STYLE = Typeface.NORMAL;
@@ -56,7 +57,6 @@ public class ProperRatingBar extends LinearLayout {
 
     private int totalTicks;
     private int lastSelectedTickIndex;
-    private boolean clickable;
     private String symbolicTick;
     private int customTextSize;
     private int customTextStyle;
@@ -68,6 +68,7 @@ public class ProperRatingBar extends LinearLayout {
 
     private boolean useSymbolicTick = false;
     private int rating;
+    private int minRating;
     private RatingListener listener = null;
 
     public ProperRatingBar(Context context, AttributeSet attrs) {
@@ -79,9 +80,8 @@ public class ProperRatingBar extends LinearLayout {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ProperRatingBar);
         //
         totalTicks = a.getInt(R.styleable.ProperRatingBar_prb_totalTicks, DF_TOTAL_TICKS);
-        rating = a.getInt(R.styleable.ProperRatingBar_prb_defaultRating, DF_DEFAULT_TICKS);
-        //
-        clickable = a.getBoolean(R.styleable.ProperRatingBar_prb_clickable, DF_CLICKABLE);
+        rating = a.getInt(R.styleable.ProperRatingBar_prb_defaultRating, DF_DEFAULT_RATING);
+        minRating = a.getInt(R.styleable.ProperRatingBar_prb_minRating, DF_MIN_RATING);
         //
         symbolicTick = a.getString(R.styleable.ProperRatingBar_prb_symbolicTick);
         if (symbolicTick == null) symbolicTick = context.getString(DF_SYMBOLIC_TICK_RES);
@@ -98,6 +98,7 @@ public class ProperRatingBar extends LinearLayout {
         tickSelectedDrawable = a.getDrawable(R.styleable.ProperRatingBar_prb_tickSelectedDrawable);
         tickSpacing = a.getDimensionPixelOffset(R.styleable.ProperRatingBar_prb_tickSpacing,
                 context.getResources().getDimensionPixelOffset(DF_TICK_SPACING_RES));
+
         //
         afterInit();
         //
@@ -150,7 +151,7 @@ public class ProperRatingBar extends LinearLayout {
     }
 
     private void updateTicksClickParameters(View tick, int position) {
-        if (clickable) {
+        if (isClickable()) {
             tick.setTag(R.id.prb_tick_tag_id, position);
             tick.setOnClickListener(mTickClickedListener);
         } else {
@@ -219,7 +220,6 @@ public class ProperRatingBar extends LinearLayout {
     public Parcelable onSaveInstanceState() {
         SavedState savedState = new SavedState(super.onSaveInstanceState());
         savedState.rating = rating;
-        savedState.clickable = clickable;
 
         return savedState;
     }
@@ -240,7 +240,6 @@ public class ProperRatingBar extends LinearLayout {
     static class SavedState extends BaseSavedState {
 
         int rating;
-        boolean clickable;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -249,14 +248,12 @@ public class ProperRatingBar extends LinearLayout {
         private SavedState(Parcel in) {
             super(in);
             this.rating = in.readInt();
-            this.clickable = in.readByte() == 1;
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
             out.writeInt(this.rating);
-            out.writeByte((byte) (this.clickable ? 1 : 0));
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
@@ -270,23 +267,38 @@ public class ProperRatingBar extends LinearLayout {
         };
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (!isClickable()) {
+            return super.dispatchTouchEvent(event);
+        }
+
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            int containerWidth = getWidth();
+            float x = event.getX();
+            int oneTickWidth = containerWidth / totalTicks;
+            int r = (int)(Math.ceil(x / oneTickWidth));
+            if (getRating() != r) {
+                setRating(r);
+                return true;
+            }
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Essential public methods
     ///////////////////////////////////////////////////////////////////////////
-
-    public boolean isClickable() {
-        return clickable;
-    }
 
     /**
      * Nifty sugar method to just toggle clickable to opposite state.
      */
     public void toggleClickable() {
-        setClickable(!clickable);
+        setClickable(!isClickable());
     }
 
     public void setClickable(boolean clickable) {
-        this.clickable = clickable;
+        super.setClickable(clickable);
         iterateTicks(new TicksIterator() {
             @Override
             public void onTick(View tick, int position) {
@@ -336,6 +348,8 @@ public class ProperRatingBar extends LinearLayout {
      */
     public void setRating(int rating) {
         if (rating  > this.totalTicks) rating = totalTicks;
+        if (rating < this.minRating) rating = minRating;
+
         this.rating = rating;
         lastSelectedTickIndex = rating - 1;
         redrawTicks();
@@ -348,5 +362,21 @@ public class ProperRatingBar extends LinearLayout {
 
     public String getSymbolicTick() {
         return this.symbolicTick;
+    }
+
+    public void setTickNormalDrawable(Drawable tickDrawable) {
+        this.tickNormalDrawable = tickDrawable;
+    }
+
+    public void setTickSelectedDrawable(Drawable tickDrawable) {
+        this.tickSelectedDrawable = tickDrawable;
+    }
+
+    public Drawable getTickNormalDrawable() {
+        return tickNormalDrawable;
+    }
+
+    public Drawable setTickSelectedDrawable() {
+        return tickSelectedDrawable;
     }
 }
