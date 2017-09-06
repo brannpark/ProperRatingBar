@@ -33,9 +33,8 @@
         <!-- Use this to set rating from xml. Default is '3' -->
         <attr name="prb_defaultRating" format="integer" />
 
-        <!-- If set to 'true' - use will be able to change rating by clicking. Default is 'false' -->
-        <attr name="prb_clickable" format="boolean" />
-
+        <!-- User this to set minimum rating. Default is '0' -->
+        <attr name="prb_minRating" format="integer" />
 
         <!-- Symbol to be used as a tick. Default is '$' -->
         <attr name="prb_symbolicTick" format="string" />
@@ -51,7 +50,6 @@
 
         <!-- Color of symbolic tick that is selected (rated). Default is '#FF888888' (gray). -->
         <attr name="prb_symbolicTickSelectedColor" format="reference|color" />
-
 
         <!-- Drawable resource to use as a tick that is not selected (not rated). No default value. -->
         <attr name="prb_tickNormalDrawable" format="reference" />
