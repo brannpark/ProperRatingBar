@@ -302,7 +302,7 @@ public class ProperRatingBar extends LinearLayout {
     }
 
     /**
-     * Animation resource id to apply to the tick view.
+     * Animation resource id to be applied to the tick view.
      * @param animResId animation resource id
      */
     public void setTickAnimationResId(int animResId) {

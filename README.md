@@ -17,6 +17,7 @@ Whatever you need to display some rating or pricing category - just use ProperRa
         app:prb_symbolicTickNormalColor="@android:color/darker_gray"
         app:prb_symbolicTickSelectedColor="@android:color/holo_green_dark"
         app:prb_totalTicks="5"
+		app:prb_tickAnimation="@anroid:anim/fade_in"
         />
 ```
 
@@ -60,7 +61,7 @@ So far we only support customising via xml layout.
 Here is the list of applicable attributes:
 + ``prb_totalTicks``: total number of ticks to show. Default is '5'
 + ``prb_defaultRating``: use this to set rating from xml. Default is '3'
-+ ``prb_minRating`` : user this to set minimum rating. Default is '0'
++ ``prb_minRating`` : use this to set minimum rating. Default is '0'
 
 + ``prb_symbolicTick``: symbol to be used as a tick. Default is '$'
 + ``android:textSize``: text size of symbolic tick. Default is '15sp'
@@ -71,6 +72,7 @@ Here is the list of applicable attributes:
 + ``prb_tickNormalDrawable``: drawable resource to use as a tick that is not selected (not rated). No default value
 + ``prb_tickSelectedDrawable``: drawable resource to use as a tick that is selected (rated). No default value
 + ``prb_tickSpacing``: margin to be applied to tick drawables. Only applies to drawable-type ticks. Default is '1dp' (gray)
++ ``prb_tickAnimation``: Animation to be applied to the tick view. No default value.
 
 Also there's a number of methods to operate on ProperRatingBar programmatically:
 ```java
@@ -135,6 +137,14 @@ public Drawable getTickNormalDrawable();
 * @retrun selected tick drawable
 */
 public Drawable setTickSelectedDrawable();
+
+/**
+* Animation resource id to be applied to the tick view.
+* @param animResId animation resource id
+*/
+public void setTickAnimationResId(int animResId);
+
+public int getTickAnimationResId();
 
 ```
 
