@@ -52,15 +52,16 @@
         android:textSize="@dimen/sample_caption_text_size"
         />
 
-    <!-- app:prb_tickAnimation="@anim/animation_scale_updown" -->
     <io.techery.properratingbar.ProperRatingBar
         android:id="@+id/lowerRatingBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="@dimen/sample_default_margin"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
         android:clickable="true"
-        app:prb_tickAnimation="@android:anim/fade_in"
+        app:prb_tickAnimation="@anim/animation_scale_updown"
         app:prb_defaultRating="4"
         app:prb_tickNormalDrawable="@drawable/ic_star_normal"
         app:prb_tickSelectedDrawable="@drawable/ic_star_selected"

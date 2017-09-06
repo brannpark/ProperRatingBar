@@ -259,8 +259,8 @@ public class ProperRatingBar extends LinearLayout {
 
         int action = event.getAction();
         if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
-            int containerWidth = getWidth();
-            float x = event.getX();
+            int containerWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+            float x = event.getX() - getPaddingLeft();
             int oneTickWidth = containerWidth / totalTicks;
             int r = (int)(Math.ceil(x / oneTickWidth));
             if (rating != r) {
