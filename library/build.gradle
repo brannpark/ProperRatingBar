@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-group = "io.techery"
+group = "com.github.brannpark"
 
 android {
 
