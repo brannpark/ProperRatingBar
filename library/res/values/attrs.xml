@@ -39,6 +39,9 @@
         <!-- Symbol to be used as a tick. Default is '$' -->
         <attr name="prb_symbolicTick" format="string" />
 
+        <!-- Tick animation to use. No default value. -->
+        <attr name="prb_tickAnimation" format="reference" />
+
         <!-- Text size of symbolic tick. Default is '15sp' -->
         <attr name="android:textSize" />
 

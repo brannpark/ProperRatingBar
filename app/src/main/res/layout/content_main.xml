@@ -59,6 +59,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_margin="@dimen/sample_default_margin"
         android:clickable="true"
+        app:prb_tickAnimation="@anim/animation_scale_updown"
         app:prb_defaultRating="4"
         app:prb_tickNormalDrawable="@drawable/ic_star_normal"
         app:prb_tickSelectedDrawable="@drawable/ic_star_selected"

@@ -11,6 +11,8 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -66,10 +68,11 @@ public class ProperRatingBar extends LinearLayout {
     private Drawable tickSelectedDrawable;
     private int tickSpacing;
 
-    private boolean useSymbolicTick = false;
+    private boolean useSymbolicTick;
     private int rating;
     private int minRating;
-    private RatingListener listener = null;
+    private int animResId;
+    private RatingListener listener;
 
     public ProperRatingBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -99,6 +102,8 @@ public class ProperRatingBar extends LinearLayout {
         tickSpacing = a.getDimensionPixelOffset(R.styleable.ProperRatingBar_prb_tickSpacing,
                 context.getResources().getDimensionPixelOffset(DF_TICK_SPACING_RES));
 
+        animResId = a.getResourceId(R.styleable.ProperRatingBar_prb_tickAnimation, 0);
+
         //
         afterInit();
         //
@@ -119,55 +124,34 @@ public class ProperRatingBar extends LinearLayout {
     private void addTicks(Context context) {
         this.removeAllViews();
         for (int i = 0; i < totalTicks; i++) {
-            addTick(context, i);
+            addTick(context);
         }
         redrawTicks();
     }
 
-    private void addTick(Context context, int position) {
+    private void addTick(Context context) {
         if (useSymbolicTick) {
-            addSymbolicTick(context, position);
+            addSymbolicTick(context);
         } else {
-            addDrawableTick(context, position);
+            addDrawableTick(context);
         }
     }
 
-    private void addSymbolicTick(Context context, int position) {
+    private void addSymbolicTick(Context context) {
         TextView tv = new TextView(context);
         tv.setText(symbolicTick);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, customTextSize);
         if (customTextStyle != 0) {
             tv.setTypeface(Typeface.DEFAULT, customTextStyle);
         }
-        updateTicksClickParameters(tv, position);
         this.addView(tv);
     }
 
-    private void addDrawableTick(Context context, int position) {
+    private void addDrawableTick(Context context) {
         ImageView iv = new ImageView(context);
         iv.setPadding(tickSpacing, tickSpacing, tickSpacing, tickSpacing);
-        updateTicksClickParameters(iv, position);
         this.addView(iv);
     }
-
-    private void updateTicksClickParameters(View tick, int position) {
-        if (isClickable()) {
-            tick.setTag(R.id.prb_tick_tag_id, position);
-            tick.setOnClickListener(mTickClickedListener);
-        } else {
-            tick.setOnClickListener(null);
-        }
-    }
-
-    private View.OnClickListener mTickClickedListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            lastSelectedTickIndex = (int) v.getTag(R.id.prb_tick_tag_id);
-            rating = lastSelectedTickIndex + 1;
-            redrawTicks();
-            if (listener != null) listener.onRatePicked(ProperRatingBar.this);
-        }
-    };
 
     private void redrawTicks() {
         iterateTicks(new TicksIterator() {
@@ -273,17 +257,37 @@ public class ProperRatingBar extends LinearLayout {
             return super.dispatchTouchEvent(event);
         }
 
-        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+        int action = event.getAction();
+        if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
             int containerWidth = getWidth();
             float x = event.getX();
             int oneTickWidth = containerWidth / totalTicks;
             int r = (int)(Math.ceil(x / oneTickWidth));
-            if (getRating() != r) {
+            if (rating != r) {
                 setRating(r);
                 return true;
             }
         }
         return super.dispatchTouchEvent(event);
+    }
+
+    private Animation loadAnimation() {
+        if (animResId > 0) {
+            return AnimationUtils.loadAnimation(getContext(), animResId);
+        }
+        return null;
+    }
+
+    private void animateLastSelectedTick() {
+        Animation anim = loadAnimation();
+        if (anim == null) {
+            return ;
+        }
+        View tickView = getChildAt(lastSelectedTickIndex);
+        if (tickView != null) {
+            tickView.clearAnimation();
+            tickView.startAnimation(anim);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -297,14 +301,16 @@ public class ProperRatingBar extends LinearLayout {
         setClickable(!isClickable());
     }
 
-    public void setClickable(boolean clickable) {
-        super.setClickable(clickable);
-        iterateTicks(new TicksIterator() {
-            @Override
-            public void onTick(View tick, int position) {
-                updateTicksClickParameters(tick, position);
-            }
-        });
+    /**
+     * Animation resource id to apply to the tick view.
+     * @param animResId animation resource id
+     */
+    public void setTickAnimationResId(int animResId) {
+        this.animResId = animResId;
+    }
+
+    public int getTickAnimationResId() {
+        return animResId;
     }
 
     /**
@@ -344,15 +350,25 @@ public class ProperRatingBar extends LinearLayout {
 
     /**
      * Set the rating to show
-     * @param rating new rating value
+     * @param value new rating value
      */
-    public void setRating(int rating) {
-        if (rating  > this.totalTicks) rating = totalTicks;
-        if (rating < this.minRating) rating = minRating;
+    public void setRating(int value) {
+        int newRating = value;
+        if (newRating  > this.totalTicks) {
+            newRating = totalTicks;
+        } else if (newRating < this.minRating) {
+            newRating = minRating;
+        }
 
-        this.rating = rating;
-        lastSelectedTickIndex = rating - 1;
-        redrawTicks();
+        if (this.rating != newRating) {
+            this.rating = newRating;
+            lastSelectedTickIndex = newRating - 1;
+            if (listener != null) {
+                listener.onRatePicked(this);
+            }
+            redrawTicks();
+            animateLastSelectedTick();
+        }
     }
 
     public void setSymbolicTick(String tick) {
