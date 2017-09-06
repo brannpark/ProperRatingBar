@@ -12,6 +12,7 @@ Whatever you need to display some rating or pricing category - just use ProperRa
         android:textSize="22sp"
         android:textStyle="bold"
         app:prb_defaultRating="4"
+		app:prb_minRating="1"
         app:prb_symbolicTick="$"
         app:prb_symbolicTickNormalColor="@android:color/darker_gray"
         app:prb_symbolicTickSelectedColor="@android:color/holo_green_dark"
@@ -44,7 +45,7 @@ Library's minSdkVersion is set to 14.
 
 We use jitpack, so you can obtain made-up library right from our github sources in your module's `build.gradle` file:
 
-`compile 'com.github.techery:properratingbar:{version_name}'`
+`compile 'com.github.branpark:ProperRatingBar:0.0.6'`
 
 Also you need to add jitpack as repository in the same file:
 ```groovy
@@ -59,7 +60,7 @@ So far we only support customising via xml layout.
 Here is the list of applicable attributes:
 + ``prb_totalTicks``: total number of ticks to show. Default is '5'
 + ``prb_defaultRating``: use this to set rating from xml. Default is '3'
-+ ``prb_clickable``: if set to 'true' - use will be able to change rating by clicking. Default is 'false'
++ ``prb_minRating`` : user this to set minimum rating. Default is '0'
 
 + ``prb_symbolicTick``: symbol to be used as a tick. Default is '$'
 + ``android:textSize``: text size of symbolic tick. Default is '15sp'
@@ -73,8 +74,6 @@ Here is the list of applicable attributes:
 
 Also there's a number of methods to operate on ProperRatingBar programmatically:
 ```java
-
-public boolean isClickable();
 
 /**
  * Nifty sugar method to just toggle clickable to opposite state.
@@ -112,6 +111,31 @@ public int getRating();
 * @param rating new rating value
 */
 public void setRating(int rating);
+
+/**
+* Set normal tick drawable
+* @param tickDrawable normal tick drawable
+*/
+public void setTickNormalDrawable(Drawable tickDrawable);
+
+/**
+* Set selected tick drawable
+* @param tickDrawable selected tick drawable
+*/
+public void setTickSelectedDrawable(Drawable tickDrawable);
+
+/**
+* Get normal tick drawable
+* @retrun normal tick drawable
+*/
+public Drawable getTickNormalDrawable();
+
+/**
+* Get selected tick drawable
+* @retrun selected tick drawable
+*/
+public Drawable setTickSelectedDrawable();
+
 ```
 
 ## Tests
