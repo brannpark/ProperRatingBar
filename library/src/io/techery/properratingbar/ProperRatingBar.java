@@ -382,10 +382,12 @@ public class ProperRatingBar extends LinearLayout {
 
     public void setTickNormalDrawable(Drawable tickDrawable) {
         this.tickNormalDrawable = tickDrawable;
+        redrawTicks();
     }
 
     public void setTickSelectedDrawable(Drawable tickDrawable) {
         this.tickSelectedDrawable = tickDrawable;
+        redrawTicks();
     }
 
     public Drawable getTickNormalDrawable() {
